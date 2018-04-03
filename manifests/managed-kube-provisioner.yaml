@@ -1,0 +1,40 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: managed-kube-provisioner
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: managed-kube-provisioner
+  namespace: default
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: managed-kube-provisioner
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: managed-kube-provisioner
+spec:
+  selector:
+    matchLabels:
+      app: managed-kube-provisioner
+  template:
+    metadata:
+      labels:
+        app: managed-kube-provisioner
+    spec:
+      containers:
+      - name: test-app
+        image: tsaarni/managed-kube-provisioner:0.0.1
+        command:
+          - "/bin/sleep"
+        args:
+          - "99999999"
+      serviceAccountName: managed-kube-provisioner

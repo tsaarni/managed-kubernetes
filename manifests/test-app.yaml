@@ -1,0 +1,65 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: test-app
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app
+spec:
+  selector:
+    matchLabels:
+      app: test-app
+  template:
+    metadata:
+      labels:
+        app: test-app
+    spec:
+      containers:
+      - name: test-app
+        image: tsaarni/managed-kube-provisioner:0.0.1
+        command:
+          - "/bin/sleep"
+        args:
+          - "99999999"
+        volumeMounts:
+          - name: test-app
+            mountPath: /test-app
+      volumes:
+      - name: test-app
+        persistentVolumeClaim:
+          claimName: test-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-service
+spec:
+  selector:
+    app: test-app
+  ports:
+    - port: 16443
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: test-ingress
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: test.domain
+    http:
+      paths:
+      - backend:
+          serviceName: test-service
+          servicePort: 16443

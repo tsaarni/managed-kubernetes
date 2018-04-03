@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app2
+spec:
+  selector:
+    matchLabels:
+      app: test-app2
+  template:
+    metadata:
+      labels:
+        app: test-app2
+    spec:
+      containers:
+      - name: test-app2
+        image: tsaarni/kube-provisioner:latest
+        command:
+          - "/bin/sleep"
+        args:
+          - "99999999"
+        volumeMounts:
+          - name: kube-etc
+            mountPath: /etc/kubernetes
+            readOnly: true
+      volumes:
+      - name: kube-etc
+        persistentVolumeClaim:
+          claimName: kube-etc-pvc
